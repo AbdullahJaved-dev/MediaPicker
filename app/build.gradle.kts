@@ -51,6 +51,8 @@ android {
 
 dependencies {
 
+    implementation(project(":compressmedia"))
+
     implementation("androidx.core:core-ktx:1.10.1")
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.6.1")
     implementation("androidx.activity:activity-compose:1.7.2")
@@ -72,8 +74,6 @@ dependencies {
     implementation("com.google.accompanist:accompanist-permissions:0.31.6-rc")
 
     implementation("com.github.bumptech.glide:compose:1.0.0-alpha.5")
-
-    implementation("com.github.AbedElazizShe:LightCompressor:1.3.1")
 
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.3")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")

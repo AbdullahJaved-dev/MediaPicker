@@ -46,20 +46,21 @@ import androidx.media3.common.PlaybackException
 import androidx.media3.common.Player
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.ui.PlayerView
-import com.abedelazizshe.lightcompressorlibrary.CompressionListener
+import com.abdullah.compressmedia.compress_helper.CompressionListener
+import com.abdullah.compressmedia.compress_helper.bytesToMegabytes
+import com.abdullah.compressmedia.compress_helper.compressImage
+import com.abdullah.compressmedia.compress_helper.compressVideo
+import com.abdullah.compressmedia.compress_helper.createImageFile
+import com.abdullah.compressmedia.compress_helper.createVideoFile
+import com.abdullah.compressmedia.compress_helper.enums.MediaType
+import com.abdullah.compressmedia.compress_helper.getFileDataFromUri
+import com.abdullah.compressmedia.compress_helper.getFileSizeFromContentUri
+import com.abdullah.compressmedia.compress_helper.getMediaType
 import com.bumptech.glide.integration.compose.ExperimentalGlideComposeApi
 import com.bumptech.glide.integration.compose.GlideImage
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.rememberMultiplePermissionsState
 import com.sdsol.mediapicker.ui.theme.MediaPickerTheme
-import com.sdsol.mediapicker.util.bytesToMegabytes
-import com.sdsol.mediapicker.util.compressImage
-import com.sdsol.mediapicker.util.compressVideo
-import com.sdsol.mediapicker.util.createImageFile
-import com.sdsol.mediapicker.util.createVideoFile
-import com.sdsol.mediapicker.util.getFileDataFromUri
-import com.sdsol.mediapicker.util.getFileSizeFromContentUri
-import com.sdsol.mediapicker.util.getMediaType
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -206,7 +207,7 @@ private fun PickMedia(paddingValues: PaddingValues) {
                         }
                         showProgressDialog = false
                         if (fileSize.toInt() != -1) {
-                            println("File Size: $fileSize MB")
+                            println("Video Compress: Actual Video Size $fileSize MB")
                         } else {
                             println("Unable to determine file size for the given content URI")
                         }
@@ -237,7 +238,7 @@ private fun PickMedia(paddingValues: PaddingValues) {
                                     showProgressDialog = false
 
                                     path?.let { p ->
-                                        println("File Size: ${size.bytesToMegabytes()} MB")
+                                        println("Video Compress: Compressed Video Size ${size.bytesToMegabytes()} MB")
                                         video2 = File(p).toUri()
                                     }
 
@@ -321,7 +322,7 @@ private fun PickMedia(paddingValues: PaddingValues) {
                             }
                             showProgressDialog = false
                             if (fileSize.toInt() != -1) {
-                                println("File Size: $fileSize MB")
+                                println("Video Compress: Actual Video Size $fileSize MB")
                             } else {
                                 println("Unable to determine file size for the given content URI")
                             }
@@ -338,10 +339,6 @@ private fun PickMedia(paddingValues: PaddingValues) {
                                     }
 
                                     override fun onStart(index: Int) {
-                                        Log.d(
-                                            "VideoPicker",
-                                            "Compress Start"
-                                        )
                                         progressValue = 0f
                                         showProgressDialog = true
                                     }
@@ -351,35 +348,22 @@ private fun PickMedia(paddingValues: PaddingValues) {
                                         size: Long,
                                         path: String?
                                     ) {
-                                        Log.d(
-                                            "VideoPicker",
-                                            "Compress Success"
-                                        )
                                         showProgressDialog = false
 
                                         path?.let { p ->
-                                            println("File Size: ${size.bytesToMegabytes()} MB")
+                                            println("Video Compress: Compressed Video Size ${size.bytesToMegabytes()} MB")
                                             video2 = File(p).toUri()
                                         }
-
                                     }
 
                                     override fun onFailure(
                                         index: Int,
                                         failureMessage: String
                                     ) {
-                                        Log.d(
-                                            "VideoPicker",
-                                            "Compress Failed $failureMessage"
-                                        )
                                         showProgressDialog = false
                                     }
 
                                     override fun onCancelled(index: Int) {
-                                        Log.d(
-                                            "VideoPicker",
-                                            "Compress Cancelled"
-                                        )
                                         showProgressDialog = false
                                     }
                                 }

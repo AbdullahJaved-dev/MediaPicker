@@ -1,4 +1,4 @@
-package com.sdsol.mediapicker.util
+package com.abdullah.compressmedia.compress_helper
 
 import android.content.Context
 import android.graphics.Bitmap
@@ -11,15 +11,12 @@ import android.net.Uri
 import android.os.Environment
 import android.provider.OpenableColumns
 import android.webkit.MimeTypeMap
-import androidx.compose.ui.text.intl.Locale
-import androidx.compose.ui.text.toLowerCase
 import androidx.exifinterface.media.ExifInterface
-import com.abedelazizshe.lightcompressorlibrary.CompressionListener
+import com.abdullah.compressmedia.compress_helper.enums.MediaType
+import com.abdullah.compressmedia.compress_helper.enums.VideoQuality
 import com.abedelazizshe.lightcompressorlibrary.VideoCompressor
-import com.abedelazizshe.lightcompressorlibrary.VideoQuality
 import com.abedelazizshe.lightcompressorlibrary.config.AppSpecificStorageConfiguration
 import com.abedelazizshe.lightcompressorlibrary.config.Configuration
-import com.sdsol.mediapicker.MediaType
 import java.io.File
 import java.io.FileNotFoundException
 import java.io.FileOutputStream
@@ -187,7 +184,7 @@ private fun getFilename(context: Context): String {
 
 fun Context.getMediaType(uri: Uri): MediaType {
     val mimeType =
-        this.contentResolver.getType(uri)?.toLowerCase(Locale.current) ?: return MediaType.Unknown
+        this.contentResolver.getType(uri)?.lowercase() ?: return MediaType.Unknown
     return when {
         mimeType.startsWith("image/") -> MediaType.Image
         mimeType.startsWith("video/") -> MediaType.Video
@@ -281,7 +278,6 @@ fun Context.getFileSizeFromContentUri(uri: Uri?): Double {
     return -1.0
 }
 
-
 fun Context.compressVideo(
     sourceUri: Uri,
     destinationFolder: String = "starfish-videos",
@@ -297,14 +293,35 @@ fun Context.compressVideo(
         ),
         configureWith = Configuration(
             videoNames = listOf("Video_${System.currentTimeMillis()}"),
-            quality = videoQuality,
+            quality = com.abedelazizshe.lightcompressorlibrary.VideoQuality.valueOf(videoQuality.name),
             isMinBitrateCheckEnabled = false
         ),
-        listener = listener
+        listener = object : com.abedelazizshe.lightcompressorlibrary.CompressionListener {
+            override fun onCancelled(index: Int) {
+                listener.onCancelled(index)
+            }
+
+            override fun onFailure(index: Int, failureMessage: String) {
+                listener.onFailure(index, failureMessage)
+            }
+
+            override fun onProgress(index: Int, percent: Float) {
+                listener.onProgress(index, percent)
+            }
+
+            override fun onStart(index: Int) {
+                listener.onStart(index)
+            }
+
+            override fun onSuccess(index: Int, size: Long, path: String?) {
+                listener.onSuccess(index, size, path)
+            }
+
+        }
     )
 }
 
-fun Context.getFileExtension(uri: Uri?): String? {
+internal fun Context.getFileExtension(uri: Uri?): String? {
     if (uri == null) return null
     val contentResolver = this.contentResolver
     val mimeType = contentResolver.getType(uri)

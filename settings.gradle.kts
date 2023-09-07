@@ -20,4 +20,4 @@ pluginManagement {
 
 rootProject.name = "MediaPicker"
 include(":app")
- 
+include(":compressmedia")
