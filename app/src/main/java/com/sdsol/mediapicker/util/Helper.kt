@@ -29,12 +29,12 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import kotlin.math.roundToInt
 
-fun compressImage(
-    context: Context,
+fun Context.compressImage(
     imagePath: String,
     maxHeight: Float = 1080.0f,
-    maxWidth: Float = 1080.0f
-): String? {
+    maxWidth: Float = 1080.0f,
+    config: Bitmap.Config = Bitmap.Config.ARGB_8888
+): File? {
     var scaledBitmap: Bitmap?
 
     val options = BitmapFactory.Options()
@@ -83,7 +83,7 @@ fun compressImage(
     }
 
     try {
-        scaledBitmap = Bitmap.createBitmap(actualWidth, actualHeight, Bitmap.Config.ARGB_8888)
+        scaledBitmap = Bitmap.createBitmap(actualWidth, actualHeight, config)
     } catch (exception: OutOfMemoryError) {
         exception.printStackTrace()
         return null
@@ -138,7 +138,7 @@ fun compressImage(
     }
 
     val out: FileOutputStream?
-    val filepath = getFilename(context)
+    val filepath = getFilename(this)
     try {
         out = FileOutputStream(filepath)
         scaledBitmap!!.compress(Bitmap.CompressFormat.JPEG, 100, out)
@@ -147,7 +147,7 @@ fun compressImage(
         e.printStackTrace()
     }
 
-    return filepath
+    return File(filepath)
 }
 
 private fun calculateInSampleSize(
@@ -214,6 +214,30 @@ fun Context.getPathFromContentUri(contentUri: Uri, extension: String = ".jpg"): 
         return null
     }
     return file.absolutePath
+}
+
+fun Context.getFileDataFromUri(
+    contentUri: Uri,
+    extension: String = ".jpg"
+): Triple<File, String, Double>? {
+    val filePath =
+        this.applicationInfo.dataDir +
+                File.separator +
+                System.currentTimeMillis() +
+                (this.getFileExtension(contentUri) ?: extension)
+    val file = File(filePath)
+    try {
+        val inputStream = contentResolver.openInputStream(contentUri) ?: return null
+        val outputStream: OutputStream = FileOutputStream(file)
+        val buf = ByteArray(1024)
+        var len: Int
+        while (inputStream.read(buf).also { len = it } > 0) outputStream.write(buf, 0, len)
+        outputStream.close()
+        inputStream.close()
+    } catch (ignore: IOException) {
+        return null
+    }
+    return Triple(file, file.absolutePath, file.length().bytesToMegabytes())
 }
 
 fun Context.createImageFile(): File? {

@@ -51,16 +51,15 @@ import com.bumptech.glide.integration.compose.ExperimentalGlideComposeApi
 import com.bumptech.glide.integration.compose.GlideImage
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.rememberMultiplePermissionsState
-import com.sdsol.mediapicker.sample.dialog
 import com.sdsol.mediapicker.ui.theme.MediaPickerTheme
 import com.sdsol.mediapicker.util.bytesToMegabytes
 import com.sdsol.mediapicker.util.compressImage
 import com.sdsol.mediapicker.util.compressVideo
 import com.sdsol.mediapicker.util.createImageFile
 import com.sdsol.mediapicker.util.createVideoFile
+import com.sdsol.mediapicker.util.getFileDataFromUri
 import com.sdsol.mediapicker.util.getFileSizeFromContentUri
 import com.sdsol.mediapicker.util.getMediaType
-import com.sdsol.mediapicker.util.getPathFromContentUri
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -74,8 +73,8 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             Scaffold {
-                //PickMedia(paddingValues = it)
-                SendEmail(it)
+                PickMedia(paddingValues = it)
+                //SendEmail(it)
             }
         }
     }
@@ -134,11 +133,11 @@ private fun PickMedia(paddingValues: PaddingValues) {
     ) {
         val context = LocalContext.current
 
-        var image by remember {
+        var compressedImage by remember {
             mutableStateOf<String?>(null)
         }
 
-        var image2 by remember {
+        var actualImage by remember {
             mutableStateOf<String?>(null)
         }
 
@@ -181,30 +180,22 @@ private fun PickMedia(paddingValues: PaddingValues) {
             if (uri == null) return@rememberLauncherForActivityResult
             when (context.getMediaType(uri)) {
                 MediaType.Image -> {
+                    val actualFileData = context.getFileDataFromUri(uri)
+                    actualFileData?.let { fileData ->
+                        Log.d("Image Compress", "Actual File Size: ${fileData.third} MB")
 
-                    val filePath = context.getPathFromContentUri(uri)
+                        actualImage = actualFileData.second
+                        val compressedFile = context.compressImage(fileData.second)
 
-                    val file1 = filePath?.let { it1 -> File(it1) }
-                    val fileSizeInBytes1 = file1?.length() ?: 0
-                    val fileSizeInKB1 = fileSizeInBytes1 / 1024
-                    val fileSizeInMB1 = fileSizeInKB1 / 1024
+                        compressedImage = compressedFile?.absolutePath
 
-                    Log.d("TAG", "onCreate: $fileSizeInKB1  $fileSizeInMB1")
-
-
-                    image =
-                        filePath?.let { it1 -> compressImage(context, it1) }
-                            ?: kotlin.run { filePath }
-
-                    val file = image?.let { it1 -> File(it1) }
-                    val fileSizeInBytes = file?.length() ?: 0
-                    val fileSizeInKB = fileSizeInBytes / 1024
-                    val fileSizeInMB = fileSizeInKB / 1024
-
-                    Log.d("TAG", "onCreate: $fileSizeInKB  $fileSizeInMB")
-
-                    image2 = uri.toString()
-
+                        Log.d(
+                            "Image Compress",
+                            "Compressed File Size: ${
+                                compressedFile?.length()?.bytesToMegabytes()
+                            } MB"
+                        )
+                    }
                 }
 
                 MediaType.Video -> {
@@ -300,29 +291,22 @@ private fun PickMedia(paddingValues: PaddingValues) {
             rememberLauncherForActivityResult(contract = ActivityResultContracts.TakePicture(),
                 onResult = { success ->
                     if (success && currentMediaUri != null) {
-                        val filePath = context.getPathFromContentUri(
-                            currentMediaUri!!
-                        )
+                        val actualFileData = context.getFileDataFromUri(currentMediaUri!!)
+                        actualFileData?.let { fileData ->
+                            Log.d("Image Compress", "Actual File Size: ${fileData.third} MB")
 
-                        val file1 = filePath?.let { it1 -> File(it1) }
-                        val fileSizeInBytes1 = file1?.length() ?: 0
-                        val fileSizeInKB1 = fileSizeInBytes1 / 1024
-                        val fileSizeInMB1 = fileSizeInKB1 / 1024
+                            actualImage = actualFileData.second
+                            val compressedFile = context.compressImage(fileData.second)
 
-                        Log.d("TAG", "onCreate: $fileSizeInKB1  $fileSizeInMB1")
+                            compressedImage = compressedFile?.absolutePath
 
-                        image =
-                            filePath?.let { it1 -> compressImage(context, it1) }
-                                ?: kotlin.run { filePath }
-
-                        val file = image?.let { it1 -> File(it1) }
-                        val fileSizeInBytes = file?.length() ?: 0
-                        val fileSizeInKB = fileSizeInBytes / 1024
-                        val fileSizeInMB = fileSizeInKB / 1024
-
-                        Log.d("TAG", "onCreate: $fileSizeInKB  $fileSizeInMB")
-
-                        image2 = filePath
+                            Log.d(
+                                "Image Compress",
+                                "Compressed File Size: ${
+                                    compressedFile?.length()?.bytesToMegabytes()
+                                } MB"
+                            )
+                        }
                     }
                 })
 
@@ -472,9 +456,9 @@ private fun PickMedia(paddingValues: PaddingValues) {
             Text(text = "Capture Media")
         }
 
-        if (image != null) {
+        if (compressedImage != null) {
             GlideImage(
-                model = image,
+                model = compressedImage,
                 contentDescription = null,
                 modifier = Modifier
                     .padding(top = 12.dp)
@@ -483,9 +467,9 @@ private fun PickMedia(paddingValues: PaddingValues) {
             )
         }
 
-        if (image2 != null) {
+        if (actualImage != null) {
             GlideImage(
-                model = image2,
+                model = actualImage,
                 contentDescription = null,
                 modifier = Modifier
                     .padding(top = 12.dp)
