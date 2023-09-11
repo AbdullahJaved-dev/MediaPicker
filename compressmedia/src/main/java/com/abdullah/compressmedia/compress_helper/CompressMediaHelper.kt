@@ -17,6 +17,8 @@ import com.abdullah.compressmedia.compress_helper.enums.VideoQuality
 import com.abedelazizshe.lightcompressorlibrary.VideoCompressor
 import com.abedelazizshe.lightcompressorlibrary.config.AppSpecificStorageConfiguration
 import com.abedelazizshe.lightcompressorlibrary.config.Configuration
+import com.abedelazizshe.lightcompressorlibrary.config.SaveLocation
+import com.abedelazizshe.lightcompressorlibrary.config.SharedStorageConfiguration
 import java.io.File
 import java.io.FileNotFoundException
 import java.io.FileOutputStream
@@ -291,6 +293,10 @@ fun Context.compressVideo(
         appSpecificStorageConfiguration = AppSpecificStorageConfiguration(
             subFolderName = destinationFolder
         ),
+        /*sharedStorageConfiguration = SharedStorageConfiguration(
+            SaveLocation.pictures,
+            "Media Picker Compressed"
+        ),*/
         configureWith = Configuration(
             videoNames = listOf("Video_${System.currentTimeMillis()}"),
             quality = com.abedelazizshe.lightcompressorlibrary.VideoQuality.valueOf(videoQuality.name),

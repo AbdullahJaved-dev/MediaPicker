@@ -53,6 +53,7 @@ import com.abdullah.compressmedia.compress_helper.compressVideo
 import com.abdullah.compressmedia.compress_helper.createImageFile
 import com.abdullah.compressmedia.compress_helper.createVideoFile
 import com.abdullah.compressmedia.compress_helper.enums.MediaType
+import com.abdullah.compressmedia.compress_helper.enums.VideoQuality
 import com.abdullah.compressmedia.compress_helper.getFileDataFromUri
 import com.abdullah.compressmedia.compress_helper.getFileSizeFromContentUri
 import com.abdullah.compressmedia.compress_helper.getMediaType
@@ -174,6 +175,8 @@ private fun PickMedia(paddingValues: PaddingValues) {
         val mainCoroutineScope = rememberCoroutineScope {
             Dispatchers.Main
         }
+
+        val coroutineScope = rememberCoroutineScope()
 
         val singleMediaPickerLauncher = rememberLauncherForActivityResult(
             contract = ActivityResultContracts.PickVisualMedia()
